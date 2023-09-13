@@ -60,7 +60,6 @@ function keyupHandler(e){//solta tecla
 		break;
 		case DOWN:
 			sprites[BUFFER.indexPlayer].movDown = false;
-			GLOBAIS.ajustar = true;
 		break;
 		case 32: //solta barra de espaço
 			GLOBAIS.lancaTeia = false;

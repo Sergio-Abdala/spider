@@ -44,13 +44,29 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
 			this.escala = 0.7;
 		}
 		if (this.flag == 'vilao' && colide(this,sprites[BUFFER.indexTeia]) && sprites[BUFFER.indexTeia].lar > 10) {
-			//identificar que o vilão está olhando
-			this.srcX = 73;//-->
+			//identificar lado que o vilão está olhando
 			this.srcY = 288;
 			this.posY -= 15;
 			this.lar = 70;
 			this.alt = 45;
 			this.flag = 'golpe';
+			if (this.srcX == 5) {//-->
+				this.srcX = 73;//-->				
+			}
+			if (this.srcX == 209) {//<-- 
+				//console.log(sprites[BUFFER.indexTeia].posX - this.posX < this.lar);
+				if (sprites[BUFFER.indexTeia].posX - this.posX < this.lar && sprites[BUFFER.indexTeia].posX - this.posX > 0) { //essa vira de lado
+					this.srcX = 73;
+					this.posX += this.lar/4;
+					//this.flag = 'vilao';
+				}else{
+					this.srcX = 207;//<--				
+				}				
+			}
+			//homem aranha cai...
+			GLOBAIS.caindo = true;
+			GLOBAIS.teiaY = 0;
+			GLOBAIS.teiaX = 0;
 		}
     }
 }
@@ -129,7 +145,7 @@ function empurando(p2, p1){//(personagem, objeto)
 				p1.worldY -= overlapy;
 			}
 		} else { // colisão pelos lados esquerda ou direita
-			if(catx > 0){ // colideu na esquerda
+			if(catx > 0){ // colidiu na esquerda
 				p1.worldX += overlapx;
 			}else{
 				p1.worldX -= overlapx;
