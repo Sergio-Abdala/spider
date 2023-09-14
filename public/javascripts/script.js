@@ -23,11 +23,11 @@ var GLOBAIS = {
 	caindo: false
 }
 const janela = [1, 130, 66, 98, 259];//srcX
-const jnl = 2;//maximo 5 janelas diferentes...
+const jnl = 2;//maximo 5 janelas diferentes... repensar
+
 const andares = 4;
-//
 predio(andares);
-construcao(2,2);
+construcao(2,1);//(folga a diminuir, niveis ou andares)
 //ponta da teia
 sprites.push(new Sprite('images/teia3.png', 'teia', 3, 3, 9, 9, 0, 0));//0, 0, 15, 15,
 //player
@@ -36,10 +36,12 @@ var BUFFER = {//BUFFER para reduzir for's no codigo...
 	indexTeia: encontrar('teia'),
 	indexPlayer: encontrar('player')
 }
+viloes(0.5);//(porcentagem % de viloes nas janelas do predio)
+sprites.push(new Sprite('images/background.png', 'placar', 575, 1740, 65, 35, 0, 0));
 sprites[BUFFER.indexPlayer].img.onload = function(){
     loop();
 }
-viloes(3);//?????????????????????????????
+
 //************************************************************************************************ */
 function loop(){
     // limpar tela
@@ -49,18 +51,18 @@ function loop(){
 			sprites[i].exe();/////////////////  movimento do jogo...            
 		//}////////////////////////////////////
 		(sprites[i].flag == 'player') ? teia() : null;//chama função que desenha teia antes desenhar aranha
-		(sprites[i].flag != 'teia' && sprites[i].flag != 'vilao' && colide(sprites[i], sprites[BUFFER.indexTeia])) ? GLOBAIS.colide = sprites[i].flag : null;//com oque a ponta da teia esta colidindo...
+		(sprites[i].flag != 'teia' && sprites[i].flag != 'vilao' && colide(sprites[i], sprites[BUFFER.indexTeia])) ? GLOBAIS.colide = sprites[i].flag : null;//com oque a ponta da teia colidiu por ultimo... problema quando ponta da teia termina em vazio Globais.colide mantem o ultimo sprite a colidir com a ponta da teia como parametro precisa identificar que ponta da teia esta no vazio???
 		sprites[i].render();/////////////// renderiza na tela...
 		//
 		if (GLOBAIS.ajustar) {
 			GLOBAIS.ajustar = false;
 			if (sprites[BUFFER.indexPlayer].meiox() > cnv.width/2) {
 				GLOBAIS.ajustar = true;
-				sprites[i].posX--;
+				(sprites[i].flag != 'placar') ? sprites[i].posX-- : null;
 			}
 			if (sprites[BUFFER.indexPlayer].meiox() < cnv.width/2) {
 				GLOBAIS.ajustar = true;
-				sprites[i].posX++;
+				(sprites[i].flag != 'placar') ? sprites[i].posX++ : null;
 			}
 			if (sprites[BUFFER.indexPlayer].meioy() > cnv.height/2 + GLOBAIS.paredeLar) {
 				//GLOBAIS.ajustar = true;
@@ -68,12 +70,12 @@ function loop(){
 			}
 			if (sprites[BUFFER.indexPlayer].meioy() < cnv.height/2 + GLOBAIS.paredeLar) {
 				GLOBAIS.ajustar = true;
-				sprites[i].posY++;
+				(sprites[i].flag != 'placar') ? sprites[i].posY++ : null;
 			}
 		}
 		if(GLOBAIS.caindo){			
 			if(abaixoDaTela()){
-				(sprites[i].flag != 'player' && sprites[i].flag != 'teia') ? sprites[i].posY-=2 : null;
+				(sprites[i].flag != 'player' && sprites[i].flag != 'teia' && sprites[i].flag != 'placar') ? sprites[i].posY-=2 : null;
 			}else{
 				if(sprites[BUFFER.indexPlayer].posY < cnv.height - sprites[BUFFER.indexPlayer].alt) {
 					sprites[BUFFER.indexPlayer].movDown = true;
@@ -91,10 +93,15 @@ function loop(){
 		if (sprites[i].flag == 'fimDaFase' && colide(sprites[i], sprites[BUFFER.indexPlayer])) {
 			//alert('fimDaFase');
 		}
+		//exclui do array
+		if (sprites[i].flag == 'excluir' || sprites[i].flag == 'delete') {
+			sprites.splice(i, 1);
+		}
 	}
-	
+	//placar
+
     ctx.font = "10px Arial";//  TEXTO...
-    ctx.fillText("cnv.width = "+cnv.width+" <==> cnv.height = "+cnv.height, 2, 12);
+    ctx.fillText(GLOBAIS.pontos, 10, 20);
 
 	//teia off...
 	if (GLOBAIS.colide == 'player' && sprites[BUFFER.indexTeia].lar == 15) {
@@ -187,7 +194,7 @@ function teia() {
 	// Stroke it (Do the Drawing)
 	ctx.strokeStyle = "white";//cor da teia
 	ctx.stroke();
-	//pendurado na teia???????????????????????????????????????????????
+	//pendurado na teia???
 	if (sprites[BUFFER.indexTeia].lar == 15) {//ponta da teia aberta grudado a parede...
 		GLOBAIS.caindo = false;
 		sprites[BUFFER.indexPlayer].movDown = false;
@@ -247,6 +254,17 @@ function teia() {
 		}
 	}	
 }
+function pontaTeia() {//retorna oq esta tocando na ponta da teia no momento
+	for (let i = 0; i < sprites.length; i++) {
+		const spr = sprites[i];
+		if (spr.flag != 'teia') {
+			if (colide(spr, sprites[BUFFER.indexTeia])) {
+				return spr.flag;
+			}
+		}
+	}
+	return false;
+}
 function predio(andar) {
 	let ajt = 1;
 	let ajuste = (10 - GLOBAIS.predioBlocos) / 2 * GLOBAIS.paredeLar;//centralizar predio na tela inicio game
@@ -290,7 +308,7 @@ function construcao(menos = 0, niveis=1) {
 		sprites.push(new Sprite('images/background.png', 'ferro', 899, 160, blocoCentralLar, blocoCentralAlt, inicial + espacoVazio*3, cnv.height - GLOBAIS.paredeAlt*andares - GLOBAIS.paredeAlt - blocoCentralAlt - (GLOBAIS.paredeAlt*3 - blocoCentralAlt + barraFerroLarg)*k));
 		let memo = inicial + espacoVazio*3 - (inicial + espacoVazio);
 		//diagonais
-		let diagonalLar = (espacoVazio - blocoCentralLar/2)/6;//calcular???
+		let diagonalLar = (espacoVazio - blocoCentralLar/2)/6;//calcular
 		let diagonalAlt = 6;
 		for (let i = 0; i < 6; i++) {		
 			
@@ -332,7 +350,7 @@ function viloes(proporcao) {
 	let totalJanelas = contar('janela');
 	let sortJanela = [];
 	let iSort = Math.floor(Math.random() * totalJanelas);
-	for (let i = 0; i < totalJanelas/proporcao; i++) {
+	for (let i = 0; i < totalJanelas*proporcao; i++) {
 		iSort = Math.floor(Math.random() * totalJanelas);//como garantir que ñ sorteie uma janela já ocupada
 		while(sortJanela.indexOf(iSort) >= 0){
 			iSort = Math.floor(Math.random() * totalJanelas);

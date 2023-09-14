@@ -15,6 +15,8 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
 		this.movDown = false;
 		this.speed = 1;
         this.flag = flag;
+		this.frequencia = 3;
+		this.contLoop = 0;
     //metodos..............................
     this.render = function(){//renderizar em tela...
         //if (this.exibir) {
@@ -58,15 +60,21 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
 				if (sprites[BUFFER.indexTeia].posX - this.posX < this.lar && sprites[BUFFER.indexTeia].posX - this.posX > 0) { //essa vira de lado
 					this.srcX = 73;
 					this.posX += this.lar/4;
+					this.posY += this.lar/25;
 					//this.flag = 'vilao';
 				}else{
-					this.srcX = 207;//<--				
+					this.srcX = 207;//<--
+					this.posX -= this.lar/25;
 				}				
 			}
 			//homem aranha cai...
 			GLOBAIS.caindo = true;
 			GLOBAIS.teiaY = 0;
 			GLOBAIS.teiaX = 0;
+		}
+		if (this.flag == 'vilao' && colide(this,sprites[BUFFER.indexPlayer])) {//player colidiu com vilão
+			this.flag = 'excluir';
+			GLOBAIS.pontos += 50; // pontuação do vilão
 		}
     }
 }
