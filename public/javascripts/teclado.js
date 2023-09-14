@@ -64,7 +64,7 @@ function keyupHandler(e){//solta tecla
 		case 32: //solta barra de espaço
 			GLOBAIS.lancaTeia = false;
 			GLOBAIS.teia = null;
-			if ((GLOBAIS.colide == 'parede' || GLOBAIS.colide == 'ferro' || GLOBAIS.colide == 'caboFerro') && sprites[BUFFER.indexTeia].lar < 10 && pontaTeia()) {
+			if ((GLOBAIS.colide == 'parede' || GLOBAIS.colide == 'ferro' || GLOBAIS.colide == 'caboFerro' || GLOBAIS.colide == 'placar') && sprites[BUFFER.indexTeia].lar < 10 && pontaTeia()) {
 				sprites[BUFFER.indexTeia].srcX = 0;
 				sprites[BUFFER.indexTeia].srcY = 0;
 				sprites[BUFFER.indexTeia].lar = 15;
@@ -127,6 +127,7 @@ function keyupHandler(e){//solta tecla
 		break;
 		case 80: // p letra...
 			console.log('letra p <==> teclado...');
+			(GLOBAIS.pause) ? GLOBAIS.pause = false : GLOBAIS.pause = true;
 		break;
 	}
 }

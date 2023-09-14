@@ -10,6 +10,7 @@ var GLOBAIS = {
 	teiaY: 0,
 	teiaX: 0,
 	lancaTeia: false,
+	teiaCarga: 50,
 	teiaXfim: null,
 	teiaYfim: null,
 	colide: null,//com oque a ponta da teia esta colidindo...
@@ -20,12 +21,13 @@ var GLOBAIS = {
 	predioBlocos: 10, //aceita somente numeros pares de blocos...
 	predioDiferencaespacoVazio: 2,
 	predioDivide: 2,//a cada x andares diminui o predio
-	caindo: false
+	caindo: false,
+	pause: false
 }
 const janela = [1, 130, 66, 98, 259];//srcX
 const jnl = 2;//maximo 5 janelas diferentes... repensar
 
-const andares = 4;
+const andares = 14;
 predio(andares);
 construcao(2,1);//(folga a diminuir, niveis ou andares)
 //ponta da teia
@@ -36,8 +38,9 @@ var BUFFER = {//BUFFER para reduzir for's no codigo...
 	indexTeia: encontrar('teia'),
 	indexPlayer: encontrar('player')
 }
-viloes(0.5);//(porcentagem % de viloes nas janelas do predio)
-sprites.push(new Sprite('images/background.png', 'placar', 575, 1740, 65, 35, 0, 0));
+viloes(0.1);//(porcentagem % de viloes nas janelas do predio)
+sprites.push(new Sprite('images/background.png', 'placar', 575, 1740, 65, 35, 0, cnv.height - 35));//quadro
+sprites.push(new Sprite('images/teia3.png', 'placar', 0, 0, 15, 15, 0, cnv.height - 15));//teia
 sprites[BUFFER.indexPlayer].img.onload = function(){
     loop();
 }
@@ -47,9 +50,9 @@ function loop(){
     // limpar tela
 	ctx.clearRect(0,0,cnv.width,cnv.height);
 	for (let i = 0 ; i < sprites.length; i++) {//percorre array de sprites for principal...
-		//if (!pause && !gameOver) {/////////////
+		if (!GLOBAIS.pause) {/////////////
 			sprites[i].exe();/////////////////  movimento do jogo...            
-		//}////////////////////////////////////
+		}////////////////////////////////////
 		(sprites[i].flag == 'player') ? teia() : null;//chama função que desenha teia antes desenhar aranha
 		(sprites[i].flag != 'teia' && sprites[i].flag != 'vilao' && colide(sprites[i], sprites[BUFFER.indexTeia])) ? GLOBAIS.colide = sprites[i].flag : null;//com oque a ponta da teia colidiu por ultimo... problema quando ponta da teia termina em vazio Globais.colide mantem o ultimo sprite a colidir com a ponta da teia como parametro precisa identificar que ponta da teia esta no vazio???
 		sprites[i].render();/////////////// renderiza na tela...
@@ -99,9 +102,12 @@ function loop(){
 		}
 	}
 	//placar
-
-    ctx.font = "10px Arial";//  TEXTO...
-    ctx.fillText(GLOBAIS.pontos, 10, 20);
+    ctx.font = "15px Arial";//  TEXTO...
+	ctx.fillStyle = 'red';
+    ctx.fillText(GLOBAIS.pontos, 13,  cnv.height - 15);	
+	ctx.font = "10px Arial";//  TEXTO...
+	ctx.fillStyle = 'white';
+	ctx.fillText(GLOBAIS.teiaCarga+' m', 17,  cnv.height - 5);
 
 	//teia off...
 	if (GLOBAIS.colide == 'player' && sprites[BUFFER.indexTeia].lar == 15) {
@@ -150,11 +156,12 @@ function abaixoDaTela() {
 }
 function teia() {
 	//lança teia...
-	if (GLOBAIS.teia && GLOBAIS.lancaTeia) { //console.log('lançar teia');
+	if (GLOBAIS.teia && GLOBAIS.lancaTeia && GLOBAIS.teiaCarga) { //console.log('lançar teia');
 		GLOBAIS.ajustar = false;
 		//teia sobe
 		let limteia = -75;
 		(GLOBAIS.teiaY > limteia) ? GLOBAIS.teiaY-=2 : null;
+		(GLOBAIS.teiaY > limteia) ? GLOBAIS.teiaCarga-=1 : null;
 		switch (GLOBAIS.teia) {					
 			case 'right':
 					//direita -->
@@ -344,6 +351,7 @@ function construcao(menos = 0, niveis=1) {
 	sprites.push(new Sprite('images/background.png', 'ferro', 224, 0, finalLar, finalAlt, cnv.width/2, altura - barraFerroLarg - finalAlt*2));
 
 	sprites.push(new Sprite('images/background.png', 'fimDaFase', 320, 0, finalLar/2, finalAlt/2, cnv.width/2-finalLar/4, altura - barraFerroLarg - finalAlt - finalAlt/4));
+	GLOBAIS.teiaCarga = altura*-1 + finalAlt*3;//???
 }
 function viloes(proporcao) {
 	//rastrear janelas
