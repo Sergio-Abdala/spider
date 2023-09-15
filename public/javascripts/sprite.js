@@ -75,6 +75,7 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
 		if (this.flag == 'vilao' && colide(this,sprites[BUFFER.indexPlayer])) {//player colidiu com vilão
 			this.flag = 'excluir';
 			GLOBAIS.pontos += 50; // pontuação do vilão
+			GLOBAIS.teiaCarga += 50;
 		}
     }
 }
