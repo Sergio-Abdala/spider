@@ -42,6 +42,7 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
         }else if(this.movDown){
             this.posY += this.speed;
         }
+		//vilao
 		if (this.flag == 'vilao') {
 			this.escala = 0.7;
 		}
@@ -89,7 +90,27 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
 				(this.srcX == 65) ? this.srcX = 85 : this.srcX = 65;
 			}
 			this.contLoop++;
-		}	
+		}
+		//ajustar
+		if (GLOBAIS.ajustar) {
+			GLOBAIS.ajustar = false;
+			if (sprites[BUFFER.indexPlayer].meiox() > cnv.width/2) {
+				GLOBAIS.ajustar = true;
+				(this.flag != 'placar') ? this.posX-- : null;
+			}
+			if (sprites[BUFFER.indexPlayer].meiox() < cnv.width/2) {
+				GLOBAIS.ajustar = true;
+				(this.flag != 'placar') ? this.posX++ : null;
+			}
+			if (sprites[BUFFER.indexPlayer].meioy() > cnv.height/2 + GLOBAIS.paredeLar) {
+				//GLOBAIS.ajustar = true;
+				//this.posY--;
+			}
+			if (sprites[BUFFER.indexPlayer].meioy() < cnv.height/2 + GLOBAIS.paredeLar) {
+				GLOBAIS.ajustar = true;
+				(this.flag != 'placar') ? this.posY++ : null;
+			}
+		}
     }
 }
 Sprite.prototype.metax = function(){

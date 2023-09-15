@@ -49,30 +49,10 @@ function loop(){
 			sprites[i].exe();/////////////////  movimento do jogo...            
 		}////////////////////////////////////
 		(sprites[i].flag == 'player') ? teia() : null;//chama função que desenha teia antes desenhar aranha
-		/*** GLOBAIS.colide recebe valor aqui...
-		(sprites[i].flag != 'teia' && sprites[i].flag != 'vilao' && colide(sprites[i], sprites[BUFFER.indexTeia])) ? GLOBAIS.colide = sprites[i].flag : null;//com oque a ponta da teia colidiu por ultimo... problema quando ponta da teia termina em vazio Globais.colide mantem o ultimo sprite a colidir com a ponta da teia como parametro precisa identificar que ponta da teia esta no vazio???
-		**/
+		
 		sprites[i].render();/////////////// renderiza na tela...
 		//
-		if (GLOBAIS.ajustar) {
-			GLOBAIS.ajustar = false;
-			if (sprites[BUFFER.indexPlayer].meiox() > cnv.width/2) {
-				GLOBAIS.ajustar = true;
-				(sprites[i].flag != 'placar') ? sprites[i].posX-- : null;
-			}
-			if (sprites[BUFFER.indexPlayer].meiox() < cnv.width/2) {
-				GLOBAIS.ajustar = true;
-				(sprites[i].flag != 'placar') ? sprites[i].posX++ : null;
-			}
-			if (sprites[BUFFER.indexPlayer].meioy() > cnv.height/2 + GLOBAIS.paredeLar) {
-				//GLOBAIS.ajustar = true;
-				//sprites[i].posY--;
-			}
-			if (sprites[BUFFER.indexPlayer].meioy() < cnv.height/2 + GLOBAIS.paredeLar) {
-				GLOBAIS.ajustar = true;
-				(sprites[i].flag != 'placar') ? sprites[i].posY++ : null;
-			}
-		}
+		
 		if(GLOBAIS.caindo){			
 			if(abaixoDaTela()){
 				(sprites[i].flag != 'player' && sprites[i].flag != 'teia' && sprites[i].flag != 'placar') ? sprites[i].posY-=2 : null;
