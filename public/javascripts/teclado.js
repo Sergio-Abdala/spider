@@ -64,13 +64,14 @@ function keyupHandler(e){//solta tecla
 		case 32: //solta barra de espaço
 			GLOBAIS.lancaTeia = false;
 			GLOBAIS.teia = null;
-			if ((GLOBAIS.colide == 'parede' || GLOBAIS.colide == 'ferro' || GLOBAIS.colide == 'caboFerro' || GLOBAIS.colide == 'placar') && sprites[BUFFER.indexTeia].lar < 10 && pontaTeia()) {
+			let teiaPt = pontaTeia();
+			if ((teiaPt == 'parede' || teiaPt == 'ferro' || teiaPt == 'caboFerro' || teiaPt == 'placar') && sprites[BUFFER.indexTeia].lar < 10 && teiaPt) {
 				sprites[BUFFER.indexTeia].srcX = 0;
 				sprites[BUFFER.indexTeia].srcY = 0;
 				sprites[BUFFER.indexTeia].lar = 15;
 				sprites[BUFFER.indexTeia].alt = 15;
 				GLOBAIS.dist = sprites[BUFFER.indexTeia].meiox() - sprites[BUFFER.indexPlayer].meiox();
-				GLOBAIS.colide = null;
+				teiaPt = null;
 				GLOBAIS.caindo = false;
 			}else{
 				if (sprites[BUFFER.indexTeia].lar < 10) {

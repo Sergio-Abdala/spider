@@ -14,7 +14,6 @@ var GLOBAIS = {
 	teiaCarga: 50,
 	teiaXfim: null,
 	teiaYfim: null,
-	colide: null,//com oque a ponta da teia esta colidindo...
 	dist: 0, //distancia do balançar
 	ajustar: false,
 	paredeLar:30,//espacoVazio dos blocos que compoem as paredes do predio
@@ -23,6 +22,7 @@ var GLOBAIS = {
 	predioDiferencaespacoVazio: 2,
 	predioDivide: 7,//a cada x andares diminui o predio
 	caindo: false,
+	GLOBAIS: 0,
 	pause: false
 }
 const janela = [1, 130, 66, 98, 259];//srcX
@@ -34,7 +34,7 @@ var BUFFER = {//BUFFER para reduzir for's no codigo...
 	indexPlayer: encontrar('player')
 }
 
-startFase(GLOBAIS.fase);
+startFase();
 loop();
 //************************************************************************************************ */
 function loop(){
@@ -49,7 +49,9 @@ function loop(){
 			sprites[i].exe();/////////////////  movimento do jogo...            
 		}////////////////////////////////////
 		(sprites[i].flag == 'player') ? teia() : null;//chama função que desenha teia antes desenhar aranha
+		/*** GLOBAIS.colide recebe valor aqui...
 		(sprites[i].flag != 'teia' && sprites[i].flag != 'vilao' && colide(sprites[i], sprites[BUFFER.indexTeia])) ? GLOBAIS.colide = sprites[i].flag : null;//com oque a ponta da teia colidiu por ultimo... problema quando ponta da teia termina em vazio Globais.colide mantem o ultimo sprite a colidir com a ponta da teia como parametro precisa identificar que ponta da teia esta no vazio???
+		**/
 		sprites[i].render();/////////////// renderiza na tela...
 		//
 		if (GLOBAIS.ajustar) {
@@ -90,6 +92,10 @@ function loop(){
 		}
 		if (sprites[i].flag == 'fimDaFase' && colide(sprites[i], sprites[BUFFER.indexPlayer])) {
 			//alert('fimDaFase');
+			GLOBAIS.fase++;
+			GLOBAIS.teiaX = 0;
+			GLOBAIS.teiaY = 0;
+			startFase();
 		}
 		//exclui do array
 		if (sprites[i].flag == 'excluir' || sprites[i].flag == 'delete') {
@@ -105,7 +111,7 @@ function loop(){
 	ctx.fillText(GLOBAIS.teiaCarga+' m', 17,  cnv.height - 5);
 
 	//teia off...
-	if (GLOBAIS.colide == 'player' && sprites[BUFFER.indexTeia].lar == 15) {
+	if (pontaTeia() == 'player' && sprites[BUFFER.indexTeia].lar == 15) {
 		sprites[BUFFER.indexTeia].srcX = 5;
 		sprites[BUFFER.indexTeia].srcY = 5;
 		sprites[BUFFER.indexTeia].lar = 5;
@@ -257,7 +263,7 @@ function teia() {
 	}	
 }
 function pontaTeia() {//retorna oq esta tocando na ponta da teia no momento
-	for (let i = 0; i < sprites.length; i++) {
+	for (let i = sprites.length-1; i >= 0; i--) {
 		const spr = sprites[i];
 		if (spr.flag != 'teia') {
 			if (colide(spr, sprites[BUFFER.indexTeia])) {
@@ -304,10 +310,12 @@ function construcao(menos = 0, niveis=1) {
 		sprites.push(new Sprite('images/background.png', 'ferro', 899, 160, barraFerroLarg, GLOBAIS.paredeAlt*2+blocoCentralAlt, inicial, altura));//barra de ferro esquerda
 		sprites.push(new Sprite('images/background.png', 'ferro', 899, 160, barraFerroLarg, GLOBAIS.paredeAlt*2 + blocoCentralAlt, inicial + GLOBAIS.paredeLar * GLOBAIS.predioBlocos - 10 , altura));//barra de ferro direita
 		//central
-
 		sprites.push(new Sprite('images/background.png', 'ferro', 899, 160, blocoCentralLar, blocoCentralAlt, inicial + espacoVazio, cnv.height - GLOBAIS.paredeAlt*andares - GLOBAIS.paredeAlt - blocoCentralAlt - (GLOBAIS.paredeAlt*3 - blocoCentralAlt + barraFerroLarg)*k));
+		sprites.push(new Sprite('images/Arcade - Bomb Jack - General Sprites.png', 'bomba', 45, 134, 14, 18, inicial + espacoVazio + blocoCentralLar/2 -7, cnv.height - GLOBAIS.paredeAlt*andares - GLOBAIS.paredeAlt - blocoCentralAlt - (GLOBAIS.paredeAlt*3 - blocoCentralAlt + barraFerroLarg)*k - 18));
 
 		sprites.push(new Sprite('images/background.png', 'ferro', 899, 160, blocoCentralLar, blocoCentralAlt, inicial + espacoVazio*3, cnv.height - GLOBAIS.paredeAlt*andares - GLOBAIS.paredeAlt - blocoCentralAlt - (GLOBAIS.paredeAlt*3 - blocoCentralAlt + barraFerroLarg)*k));
+		sprites.push(new Sprite('images/Arcade - Bomb Jack - General Sprites.png', 'bomba', 45, 134, 14, 18, inicial + espacoVazio*3 + blocoCentralLar/2 -7, cnv.height - GLOBAIS.paredeAlt*andares - GLOBAIS.paredeAlt - blocoCentralAlt - (GLOBAIS.paredeAlt*3 - blocoCentralAlt + barraFerroLarg)*k - 18));
+
 		let memo = inicial + espacoVazio*3 - (inicial + espacoVazio);
 		//diagonais
 		let diagonalLar = (espacoVazio - blocoCentralLar/2)/6;//calcular
@@ -348,7 +356,7 @@ function construcao(menos = 0, niveis=1) {
 	sprites.push(new Sprite('images/background.png', 'fimDaFase', 320, 0, finalLar/2, finalAlt/2, cnv.width/2-finalLar/4, altura - barraFerroLarg - finalAlt - finalAlt/4));
 	GLOBAIS.teiaCarga = altura*-1 + cnv.height;//???
 }
-function viloes(proporcao) {
+function viloes() {
 	//limpar vilões do array
 	for (let i = 0; i < sprites.length; i++) {
 		const spr = sprites[i];
@@ -358,7 +366,7 @@ function viloes(proporcao) {
 	let totalJanelas = contar('janela');
 	let sortJanela = [];
 	let iSort = Math.floor(Math.random() * totalJanelas);
-	for (let i = 0; i < totalJanelas*proporcao; i++) {
+	for (let i = 0; i < totalJanelas*GLOBAIS.proporcao; i++) {
 		iSort = Math.floor(Math.random() * totalJanelas);//como garantir que ñ sorteie uma janela já ocupada
 		while(sortJanela.indexOf(iSort) >= 0){
 			iSort = Math.floor(Math.random() * totalJanelas);
@@ -372,21 +380,20 @@ function viloes(proporcao) {
 			sprites.push(new Sprite('images/amazona.png', 'vilao', 209, 8, 55, 25, sprites[encontrar('janela', iSort)].posX-14, sprites[encontrar('janela', iSort)].posY+5));//<--
 		}
 	}
-	setTimeout(function(){ viloes(proporcao) }, 6000);//ta chamando de novo ao chamar startFase()
+	setTimeout(function(){ viloes() }, 6000);//ta chamando de novo ao chamar startFase()???
 }
-function startFase(fase) {
-	andares = 7 +fase * 5;
+function startFase() {
+	andares = 7 +GLOBAIS.fase * 5;
 	sprites = [];
 	GLOBAIS.paredeLar=30;
 	predio(andares);
-	construcao(2,1 + fase);//(folga a diminuir, niveis ou andares)
+	construcao(2,1 + GLOBAIS.fase);//(folga a diminuir, niveis ou andares)
 	//ponta da teia
 	sprites.push(new Sprite('images/teia3.png', 'teia', 3, 3, 9, 9, 0, 0));//0, 0, 15, 15,
 	//player
 	sprites.push(new Sprite('images/Spider-Man.png', 'player', 136, 208, 23, 36, cnv.width/2-40.5, cnv.height-35));
-	let vl = 0;
-	(vl < 0.6) ? vl += 0.1 : null;
-	viloes(vl);//(porcentagem % de viloes nas janelas do predio)
+	(GLOBAIS.fase) ? GLOBAIS.proporcao = GLOBAIS.fase/10 : GLOBAIS.proporcao = 0.1;
+	(!GLOBAIS.fase) ? viloes() : null;//(porcentagem % de viloes nas janelas do predio)
 	sprites.push(new Sprite('images/background.png', 'placar', 575, 1740, 65, 35, 0, cnv.height - 35));//quadro
 	sprites.push(new Sprite('images/teia3.png', 'placar', 0, 0, 15, 15, 0, cnv.height - 15));//teia
 	//sprites[BUFFER.indexPlayer].img.onload = function(){

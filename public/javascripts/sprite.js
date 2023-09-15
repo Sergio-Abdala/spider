@@ -15,7 +15,7 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
 		this.movDown = false;
 		this.speed = 1;
         this.flag = flag;
-		this.frequencia = 3;
+		this.frequencia = 26;
 		this.contLoop = 0;
     //metodos..............................
     this.render = function(){//renderizar em tela...
@@ -72,11 +72,24 @@ function Sprite(imgSrc, flag, srcX, srcY, lar, alt, posX, posY){
 			GLOBAIS.teiaY = 0;
 			GLOBAIS.teiaX = 0;
 		}
-		if (this.flag == 'vilao' && colide(this,sprites[BUFFER.indexPlayer])) {//player colidiu com vilão
+		if (colide(this,sprites[BUFFER.indexPlayer]) && (this.flag == 'vilao' || this.flag == 'bomba')) {//player colidiu com ...			
+			if(this.flag == 'vilao'){
+				GLOBAIS.pontos += 50; // pontuação do vilão
+				GLOBAIS.teiaCarga += 50;
+			}
+			if (this.flag == 'bomba') {
+				GLOBAIS.pontos += 100; // pontuação da bomba
+				GLOBAIS.teiaCarga += 100;
+			}
 			this.flag = 'excluir';
-			GLOBAIS.pontos += 50; // pontuação do vilão
-			GLOBAIS.teiaCarga += 50;
 		}
+		if (this.flag == 'bomba' && this.posY > 25) {//acende bomba
+			if (this.contLoop == this.frequencia) {
+				this.contLoop = 0;
+				(this.srcX == 65) ? this.srcX = 85 : this.srcX = 65;
+			}
+			this.contLoop++;
+		}	
     }
 }
 Sprite.prototype.metax = function(){
