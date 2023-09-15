@@ -6,6 +6,7 @@ var sprites = new Array();
 var GLOBAIS = {
     vida: 3,
     pontos: 0,
+	fase: 0,
 	teia: null,
 	teiaY: 0,
 	teiaX: 0,
@@ -20,33 +21,27 @@ var GLOBAIS = {
 	paredeAlt: 35,//altura dos blocos que compoem as paredes do predio
 	predioBlocos: 10, //aceita somente numeros pares de blocos...
 	predioDiferencaespacoVazio: 2,
-	predioDivide: 2,//a cada x andares diminui o predio
+	predioDivide: 7,//a cada x andares diminui o predio
 	caindo: false,
 	pause: false
 }
 const janela = [1, 130, 66, 98, 259];//srcX
 const jnl = 2;//maximo 5 janelas diferentes... repensar
 
-const andares = 14;
-predio(andares);
-construcao(2,1);//(folga a diminuir, niveis ou andares)
-//ponta da teia
-sprites.push(new Sprite('images/teia3.png', 'teia', 3, 3, 9, 9, 0, 0));//0, 0, 15, 15,
-//player
-sprites.push(new Sprite('images/Spider-Man.png', 'player', 136, 208, 23, 36, cnv.width/2-40.5, cnv.height/2));
+var andares;
 var BUFFER = {//BUFFER para reduzir for's no codigo...
 	indexTeia: encontrar('teia'),
 	indexPlayer: encontrar('player')
 }
-viloes(0.1);//(porcentagem % de viloes nas janelas do predio)
-sprites.push(new Sprite('images/background.png', 'placar', 575, 1740, 65, 35, 0, cnv.height - 35));//quadro
-sprites.push(new Sprite('images/teia3.png', 'placar', 0, 0, 15, 15, 0, cnv.height - 15));//teia
-sprites[BUFFER.indexPlayer].img.onload = function(){
-    loop();
-}
 
+startFase(GLOBAIS.fase);
+loop();
 //************************************************************************************************ */
 function loop(){
+	BUFFER = {//BUFFER para reduzir for's no codigo...
+		indexTeia: encontrar('teia'),
+		indexPlayer: encontrar('player')
+	}
     // limpar tela
 	ctx.clearRect(0,0,cnv.width,cnv.height);
 	for (let i = 0 ; i < sprites.length; i++) {//percorre array de sprites for principal...
@@ -338,7 +333,7 @@ function construcao(menos = 0, niveis=1) {
 		}
 		for (let i = 0; i < 4; i++) {
 			(i && k) ? recuo = barraFerroLarg/2*i*k : recuo=0;
-			sprites.push(new Sprite('images/background.png', 'ferro', 899, 160, GLOBAIS.paredeLar*GLOBAIS.predioBlocos/4, barraFerroLarg, inicial + GLOBAIS.paredeAlt*2*i - recuo, altura - barraFerroLarg));
+			sprites.push(new Sprite('images/background.png', 'ferro', 899, 160, GLOBAIS.paredeLar*GLOBAIS.predioBlocos/4, barraFerroLarg, inicial + GLOBAIS.paredeLar*GLOBAIS.predioBlocos/4*i, altura - barraFerroLarg));
 		}		
 	}
 	//final da fase player vence...
@@ -351,9 +346,14 @@ function construcao(menos = 0, niveis=1) {
 	sprites.push(new Sprite('images/background.png', 'ferro', 224, 0, finalLar, finalAlt, cnv.width/2, altura - barraFerroLarg - finalAlt*2));
 
 	sprites.push(new Sprite('images/background.png', 'fimDaFase', 320, 0, finalLar/2, finalAlt/2, cnv.width/2-finalLar/4, altura - barraFerroLarg - finalAlt - finalAlt/4));
-	GLOBAIS.teiaCarga = altura*-1 + finalAlt*3;//???
+	GLOBAIS.teiaCarga = altura*-1 + cnv.height;//???
 }
 function viloes(proporcao) {
+	//limpar vilões do array
+	for (let i = 0; i < sprites.length; i++) {
+		const spr = sprites[i];
+		(spr.flag == 'vilao' || spr.flag == 'golpe') ? spr.flag = 'excluir' : null;
+	}
 	//rastrear janelas
 	let totalJanelas = contar('janela');
 	let sortJanela = [];
@@ -364,7 +364,7 @@ function viloes(proporcao) {
 			iSort = Math.floor(Math.random() * totalJanelas);
 		}
 		sortJanela.push(iSort);
-		sprites[encontrar('janela', iSort)].srcX = 130;//130
+		sprites[encontrar('janela', iSort)].srcX = 130;//130 janela aberta
 
 		if (Math.floor(Math.random() * 2)) {
 			sprites.push(new Sprite('images/amazona.png', 'vilao', 5, 8, 55, 25, sprites[encontrar('janela', iSort)].posX+5, sprites[encontrar('janela', iSort)].posY+5));//-->
@@ -372,6 +372,26 @@ function viloes(proporcao) {
 			sprites.push(new Sprite('images/amazona.png', 'vilao', 209, 8, 55, 25, sprites[encontrar('janela', iSort)].posX-14, sprites[encontrar('janela', iSort)].posY+5));//<--
 		}
 	}
+	setTimeout(function(){ viloes(proporcao) }, 6000);//ta chamando de novo ao chamar startFase()
+}
+function startFase(fase) {
+	andares = 7 +fase * 5;
+	sprites = [];
+	GLOBAIS.paredeLar=30;
+	predio(andares);
+	construcao(2,1 + fase);//(folga a diminuir, niveis ou andares)
+	//ponta da teia
+	sprites.push(new Sprite('images/teia3.png', 'teia', 3, 3, 9, 9, 0, 0));//0, 0, 15, 15,
+	//player
+	sprites.push(new Sprite('images/Spider-Man.png', 'player', 136, 208, 23, 36, cnv.width/2-40.5, cnv.height-35));
+	let vl = 0;
+	(vl < 0.6) ? vl += 0.1 : null;
+	viloes(vl);//(porcentagem % de viloes nas janelas do predio)
+	sprites.push(new Sprite('images/background.png', 'placar', 575, 1740, 65, 35, 0, cnv.height - 35));//quadro
+	sprites.push(new Sprite('images/teia3.png', 'placar', 0, 0, 15, 15, 0, cnv.height - 15));//teia
+	//sprites[BUFFER.indexPlayer].img.onload = function(){
+		//(fase) ? loop() : null;//executar somente uma vez quando fase é 0...
+	//}
 }
 
 function encontrar(flag, n){//descobre index do objeto que corresponda a flag com maior index do array
